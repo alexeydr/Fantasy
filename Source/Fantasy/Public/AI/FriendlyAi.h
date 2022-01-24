@@ -12,6 +12,8 @@ class UDataTable;
 class AFriendlyAIController;
 class AStaticMeshActor;
 class UParticleSystemComponent;
+class UWidgetComponent;
+class UEmojiComponent;
 
 UCLASS()
 class FANTASY_API AFriendlyAi : public ACharacter
@@ -52,6 +54,12 @@ protected:
 
 	UPROPERTY()
 	UParticleSystemComponent* EmitterComponent;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
+	UWidgetComponent* WidgetComp;
+
+	UPROPERTY()
+	UEmojiComponent* EmojiComp;
 
 	FBotTask* GetNextTask();
 

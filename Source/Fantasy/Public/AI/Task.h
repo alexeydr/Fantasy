@@ -28,12 +28,12 @@ public:
 	UAnimSequence* Animation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bNeedChangePosotion;
+	bool bNeedChangePosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosotion"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition"))
 	FVector CharLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosotion"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition"))
 	FRotator CharRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -42,14 +42,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh"))
 	UStaticMesh* MeshForInteract;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh"))
-	FName SocketName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bNeedChangeMeshPosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
 	FRotator MeshRotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh"))
-	bool bAttachMeshForNextTask;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
+	FVector AdditionalLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
+	FVector NewScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bAttachMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedSpawnParticle;
@@ -65,6 +71,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle"))
 	FVector EmitterScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bNeedEmoji;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedEmoji"))
+	UTexture2D* EmojiTexture;
 
 	bool operator==(const FBotTask& BotTask)
 	{

@@ -8,7 +8,7 @@ public class Fantasy : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","UMG","Slate","SlateCore", "AIModule" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

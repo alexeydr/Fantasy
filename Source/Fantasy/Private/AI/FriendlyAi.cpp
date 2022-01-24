@@ -6,11 +6,15 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Engine/Texture2D.h"
+#include "Components/WidgetComponent.h"
+#include "Components/EmojiComponent.h"
 
 AFriendlyAi::AFriendlyAi()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	WidgetComp = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
+	EmojiComp = CreateDefaultSubobject<UEmojiComponent>("EmojiComponent");
 }
 
 void AFriendlyAi::BeginPlay()
@@ -76,7 +80,12 @@ void AFriendlyAi::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::
 void AFriendlyAi::StartTaskAction()
 {
 	bTaskStarted = true;
-	if (CurrentTask.bNeedChangePosotion)
+	if (CurrentTaskActor)
+	{
+		SetActorRotation(CurrentTaskActor->GetActorRotation());
+	}
+
+	if (CurrentTask.bNeedChangePosition)
 	{
 		SetActorLocationAndRotation(CurrentTask.CharLocation, CurrentTask.CharRotation);
 	}
@@ -86,6 +95,25 @@ void AFriendlyAi::StartTaskAction()
 		GetMesh()->SetVisibility(false);
 	}
 
+	if (CurrentTask.bNeedSpawnParticle)
+	{
+		EmitterComponent = UGameplayStatics::SpawnEmitterAtLocation(this, CurrentTask.EmitterTemplate, CurrentTask.EmitterLocation, CurrentTask.EmitterRotation, CurrentTask.EmitterScale);
+	}
+
+	if (CurrentTask.bNeedEmoji)
+	{
+		EmojiComp->WatchEmoji();
+		EmojiComp->SetEmojiWidget(CurrentTask.EmojiTexture);
+	}
+
+	FTimerHandle Th;
+	GetWorld()->GetTimerManager().SetTimer(Th, this, &AFriendlyAi::OnTaskCompleted, CurrentTask.TaskTime, false);
+}
+
+void AFriendlyAi::OnTaskCompleted()
+{
+	EmojiComp->HideEmoji();
+
 	if (CurrentTask.bNeedInteractWithMesh)
 	{
 		TaskMesh = GetWorld()->SpawnActor<AStaticMeshActor>();
@@ -94,25 +122,25 @@ void AFriendlyAi::StartTaskAction()
 			TaskMesh->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
 			TaskMesh->GetStaticMeshComponent()->SetStaticMesh(CurrentTask.MeshForInteract);
 			TaskMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("LeftHand"));
-			TaskMesh->SetActorRotation(CurrentTask.MeshRotation);
+			
 		}
 	}
 
-	if (CurrentTask.bNeedSpawnParticle)
+	if (TaskMesh)
 	{
-		EmitterComponent = UGameplayStatics::SpawnEmitterAtLocation(this, CurrentTask.EmitterTemplate, CurrentTask.EmitterLocation, CurrentTask.EmitterRotation, CurrentTask.EmitterScale);
-	}
-	FTimerHandle Th;
-	GetWorld()->GetTimerManager().SetTimer(Th, this, &AFriendlyAi::OnTaskCompleted, CurrentTask.TaskTime, false);
-}
+		if (CurrentTask.bNeedChangeMeshPosition)
+		{
+			TaskMesh->SetActorRotation(CurrentTask.MeshRotation);
+			TaskMesh->AddActorLocalOffset(CurrentTask.AdditionalLocation);
+			TaskMesh->SetActorScale3D(CurrentTask.NewScale);
+		}
 
-void AFriendlyAi::OnTaskCompleted()
-{
+		if (!CurrentTask.bAttachMesh)
+			TaskMesh->Destroy();
+	}
+
 	if (CurrentTask.bIsHomeTask)
 		GetMesh()->SetVisibility(true);
-
-	if (!CurrentTask.bAttachMeshForNextTask)	
-		TaskMesh->Destroy();
 
 	if (EmitterComponent)
 		EmitterComponent->DestroyComponent();
