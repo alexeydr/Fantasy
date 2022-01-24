@@ -48,6 +48,7 @@ void UMagicComponent::PrepareForCastSpell(FSpell& Spell)
 {
 	if (Mana >= Spell.Price && !Spell.bIsActiveCooldown)
 	{
+		CurrentCastSpell = Spell.CastTime;
 		bCanCastSpell = false;
 		Spell.bIsActiveCooldown = true;
 		

@@ -24,7 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddHealth(float Param);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	float GetHealth() const { return Health; };
 
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)

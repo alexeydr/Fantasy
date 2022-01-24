@@ -72,13 +72,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddMana(float Value);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	float GetMana() const {	return Mana; };
 
 	UFUNCTION(BlueprintCallable)
 	bool IsCanCastSpell() const { return bCanCastSpell;	};
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
+	float GetCurrentCastSpell() const { return CurrentCastSpell; };
+
+	UFUNCTION(BlueprintPure)
 	const TArray<FSpell>& GetActiveSpells() const { return ActiveSpells; };
 
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
@@ -115,6 +118,7 @@ protected:
 	TArray<FSpell*> CooldownSpells;
 
 	bool bCanCastSpell;
+	float CurrentCastSpell;
 
 public:	
 

@@ -50,10 +50,10 @@ protected:
 
 public:
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	UMagicComponent* GetMagicComponent() const { return MagicComp; };
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	UStatsComponent* GetStatsComponent() const { return StatsComp; };
 
 	virtual void Tick(float DeltaTime) override;
