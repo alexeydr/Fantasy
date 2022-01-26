@@ -54,6 +54,10 @@ void AFriendlyAi::TaskStarted()
 		}
 		if (Emitters.Num() > 0)
 		{
+			if (RandomParticleComp)
+			{
+				RandomParticleComp->DestroyComponent();
+			}
 			RandomParticleComp = UGameplayStatics::SpawnEmitterAtLocation(this, Emitters[FMath::RandRange(0, Emitters.Num() - 1)], GetActorLocation());
 		}
 	}

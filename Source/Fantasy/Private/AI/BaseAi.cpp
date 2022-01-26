@@ -90,14 +90,17 @@ void ABaseAi::GoToNextTask()
 
 void ABaseAi::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	if (Result == EPathFollowingResult::Success)
-	{ 
-		StartTaskAction();
-	}
-
-	if (Result == EPathFollowingResult::Blocked)
+	if (!MoveTarget)
 	{
-		GoToNextTask();
+		if (Result == EPathFollowingResult::Success)
+		{
+			StartTaskAction();
+		}
+
+		if (Result == EPathFollowingResult::Blocked)
+		{
+			GoToNextTask();
+		}
 	}
 	
 }
@@ -117,11 +120,19 @@ void ABaseAi::StartTaskAction()
 
 	if (CurrentTask.bIsHomeTask)
 	{
+		if (TaskMesh)
+		{
+			TaskMesh->Destroy();
+		}
 		GetMesh()->SetVisibility(false);
 	}
 
 	if (CurrentTask.bNeedSpawnParticle)
 	{
+		if (EmitterComponent)
+		{
+			EmitterComponent->DestroyComponent();
+		}
 		EmitterComponent = UGameplayStatics::SpawnEmitterAtLocation(this, CurrentTask.EmitterTemplate, CurrentTask.EmitterLocation, CurrentTask.EmitterRotation, CurrentTask.EmitterScale);
 	}
 
@@ -184,15 +195,6 @@ void ABaseAi::Tick(float DeltaTime)
 	
 	if (AiController && MoveTarget)
 	{
-		if (GetDistanceTo(MoveTarget) < 70.f)
-		{
-			AiController->StopMovement();
-			OnMoveTargetCompleted();
-			MoveTarget = nullptr;
-		}
-		else
-		{
-			AiController->MoveToActor(MoveTarget);
-		}
+		AiController->MoveToActor(MoveTarget);		
 	}
 }

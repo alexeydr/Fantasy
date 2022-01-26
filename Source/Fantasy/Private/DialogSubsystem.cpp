@@ -7,7 +7,7 @@
 void UDialogSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	FTimerHandle TH;
-	GetWorld()->GetTimerManager().SetTimer(TH, this, &UDialogSubsystem::StartDialogs, 60.f, true);
+	GetWorld()->GetTimerManager().SetTimer(TH, this, &UDialogSubsystem::StartDialogs, 35.f, true);
 	Super::Initialize(Collection);
 }
 
@@ -43,15 +43,17 @@ void UDialogSubsystem::StartDialogs()
 		if (CurrentRuntimeDialogs >= MaxRuntimeDialogs)
 			return;
 
-		if (!BotA->FindComponentByClass<UDialogComponent>() || HasCooldown(BotA) || BotsInDialog.Contains(BotA))
+		auto* Base = Cast<ABaseAi>(BotA);
+		if (!BotA->FindComponentByClass<UDialogComponent>() || HasCooldown(BotA) || BotsInDialog.Contains(BotA) || Base->bTaskStarted)
 			continue;
 
 		for (auto* BotB : AllBots)
 		{
-			if (BotA != BotB &&
-				BotA->GetDistanceTo(BotB) < 1000.f &&
-				!HasCooldown(BotB) && 
-				!BotsInDialog.Contains(BotB))
+			Base = Cast<ABaseAi>(BotB);
+			if (!BotB->FindComponentByClass<UDialogComponent>() || BotsInDialog.Contains(BotB) || HasCooldown(BotB) || Base->bTaskStarted)
+				continue;
+
+			if (BotA != BotB &&	BotA->GetDistanceTo(BotB) < 1000.f)
 			{
 				// TODO: Refactor
 				BotsInDialog.Add(BotA);
@@ -74,6 +76,9 @@ void UDialogSubsystem::StartDialog(const FDialogPair& Pair)
 	{
 		OnDialogUpdateState.Broadcast(EDialogStatus::Started, Pair.BotA);
 		OnDialogUpdateState.Broadcast(EDialogStatus::Started, Pair.BotB);
+
+		Cast<ABaseAi>(Pair.BotA)->MoveTarget = nullptr;
+		Cast<ABaseAi>(Pair.BotB)->MoveTarget = nullptr;
 
 		OnDialogUpdateState.Broadcast(EDialogStatus::TalkReplic, FMath::RandBool() ? Pair.BotA : Pair.BotB);
 	}		
@@ -125,7 +130,6 @@ void UDialogSubsystem::EndDialog(const FDialogPair& Pair)
 
 	CompleteDialog(Pair.BotA);
 	CompleteDialog(Pair.BotB);
-	CurrentRuntimeDialogs--;
 }
 
 void UDialogSubsystem::CompleteDialog(AActor* Bot)
@@ -138,6 +142,8 @@ void UDialogSubsystem::CompleteDialog(AActor* Bot)
 		DialogColdownBots.Add(Bot, CurrentTime);
 
 	BotsInDialog.Remove(Bot);
+
+	CurrentRuntimeDialogs--;
 }
 
 bool UDialogSubsystem::HasCooldown(AActor* Actor)

@@ -80,8 +80,8 @@ protected:
 	TArray<FDialogPair> PairsInDialog;
 
 	float ColdownTime = 30.f;
-	int MaxRuntimeDialogs = 1;
-	int MaxReplics = 3;
+	int MaxRuntimeDialogs = 4;
+	int MaxReplics = 10;
 	int CurrentRuntimeDialogs = 0;
 
 	UFUNCTION()

@@ -69,7 +69,6 @@ protected:
 
 	void GoToNextTask();
 
-	virtual void OnMoveTargetCompleted(){};
 	virtual void TaskCompleted() {};
 	virtual void TaskStarted() {};
 
