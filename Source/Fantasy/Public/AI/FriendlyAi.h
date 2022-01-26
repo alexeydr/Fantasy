@@ -7,6 +7,9 @@
 
 class UWidgetComponent;
 class UEmojiComponent;
+class UDialogComponent;
+class UParticleSystemComponent;
+class UParticleSystem;
 
 UCLASS()
 class FANTASY_API AFriendlyAi : public ABaseAi
@@ -16,15 +19,22 @@ class FANTASY_API AFriendlyAi : public ABaseAi
 public:
 	AFriendlyAi();
 
+	virtual void BeginPlay() override;
+
 protected:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
 	UWidgetComponent* WidgetComp;
 
-	UPROPERTY()
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
 	UEmojiComponent* EmojiComp;
 
-	virtual void TaskCompleted() override;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
+	UDialogComponent* DialogComp;
 
+	UPROPERTY()
+	UParticleSystemComponent* RandomParticleComp;
+
+	virtual void TaskCompleted() override;
 	virtual void TaskStarted() override;
 };

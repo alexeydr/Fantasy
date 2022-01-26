@@ -4,15 +4,18 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ABaseAi::ABaseAi()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	GetCharacterMovement()->SetUpdateNavAgentWithOwnersCollisions(true);
+	GetCharacterMovement()->UpdateNavAgent(*GetCapsuleComponent());
 }
 
 // Called when the game starts or when spawned
@@ -23,10 +26,9 @@ void ABaseAi::BeginPlay()
 	AiController = Cast<AAIController>(GetController());
 	if (AiController)
 	{
-		AiController->ReceiveMoveCompleted.AddDynamic(this, &ABaseAi::OnMoveCompleted);
+		AiController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveCompleted);
 		GoToNextTask();
 	}
-
 }
 
 FBotTask* ABaseAi::GetNextTask()
@@ -48,32 +50,56 @@ FBotTask* ABaseAi::GetNextTask()
 	return nullptr;
 }
 
-bool ABaseAi::GoToNextTask()
+void ABaseAi::ContinueCurrentTask()
+{
+	if (AiController && CurrentTaskActor)
+	{
+		AiController->MoveTo(CurrentTaskActor);
+		return;
+	}
+	GoToNextTask();
+}
+
+void ABaseAi::GoToNextTask()
 {
 	auto* NextTask = GetNextTask();
 	if (AiController && NextTask)
 	{
+		float NearestPoint = FLT_MAX;
+		ATask* NearestTask = nullptr;
 		for (TActorIterator<ATask> TaskItr(GetWorld()); TaskItr; ++TaskItr)
 		{
-			if (TaskItr->CurrentTaskName == NextTask->Name && TaskItr->bIsEmptyTask)
+			if (TaskItr->CurrentTaskName == NextTask->Name && TaskItr->bIsEmptyTask && NearestPoint > TaskItr->GetSquaredDistanceTo(this))
 			{
-				CurrentTask = *NextTask;
-				CurrentTaskActor = *TaskItr;
-				TaskItr->bIsEmptyTask = false;
-				AiController->MoveToActor(*TaskItr);
-				return true;
+				NearestTask = *TaskItr;
+				NearestPoint = TaskItr->GetSquaredDistanceTo(this);
 			}
 		}
+		if (NearestTask)
+		{
+			CurrentTask = *NextTask;
+			CurrentTaskActor = NearestTask;
+			CurrentTaskActor->bIsEmptyTask = false;
+			AiController->MoveToActor(CurrentTaskActor);
+			return;
+		}
+		CurrentTask = *NextTask;
+		GoToNextTask();
 	}
-	return false;
 }
 
 void ABaseAi::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
 	if (Result == EPathFollowingResult::Success)
-	{
+	{ 
 		StartTaskAction();
 	}
+
+	if (Result == EPathFollowingResult::Blocked)
+	{
+		GoToNextTask();
+	}
+	
 }
 
 void ABaseAi::StartTaskAction()
@@ -111,11 +137,16 @@ void ABaseAi::OnTaskCompleted()
 
 	if (CurrentTask.bNeedInteractWithMesh)
 	{
+		if (TaskMesh)
+		{
+			TaskMesh->Destroy();
+		}
 		TaskMesh = GetWorld()->SpawnActor<AStaticMeshActor>();
 		if (TaskMesh)
 		{
 			TaskMesh->GetStaticMeshComponent()->SetMobility(EComponentMobility::Movable);
 			TaskMesh->GetStaticMeshComponent()->SetStaticMesh(CurrentTask.MeshForInteract);
+			TaskMesh->SetActorEnableCollision(false);
 			TaskMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("LeftHand"));
 
 		}
@@ -144,10 +175,24 @@ void ABaseAi::OnTaskCompleted()
 		CurrentTaskActor->bIsEmptyTask = true;
 
 	bTaskStarted = false;
-	if (!GoToNextTask())
-	{
-		CurrentTaskActor->bIsEmptyTask = false;
-		StartTaskAction();
-	}
+	GoToNextTask();
 }
 
+void ABaseAi::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+	if (AiController && MoveTarget)
+	{
+		if (GetDistanceTo(MoveTarget) < 70.f)
+		{
+			AiController->StopMovement();
+			OnMoveTargetCompleted();
+			MoveTarget = nullptr;
+		}
+		else
+		{
+			AiController->MoveToActor(MoveTarget);
+		}
+	}
+}

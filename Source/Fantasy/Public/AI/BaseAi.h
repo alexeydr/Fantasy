@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AI/Task.h"
+#include "DialogSubsystem.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "BaseAi.generated.h"
 
@@ -28,12 +29,17 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bTaskStarted;
 
+	UPROPERTY()
+	AActor* MoveTarget;
+
+	void ContinueCurrentTask();
+
 protected:
 
-	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=BotTask"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly , meta = (RequiredAssetDataTags = "RowStructure=BotTask"))
 	UDataTable* AllAvailableTasksDT;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> SelectedTasks;
 
 	UPROPERTY()
@@ -53,8 +59,6 @@ protected:
 
 	FBotTask* GetNextTask();
 
-	bool GoToNextTask(); //true if success
-
 	void StartTaskAction();
 
 	UFUNCTION()
@@ -63,13 +67,17 @@ protected:
 	UFUNCTION()
 	void OnTaskCompleted();
 
-	virtual void TaskCompleted() {};
+	void GoToNextTask();
 
+	virtual void OnMoveTargetCompleted(){};
+	virtual void TaskCompleted() {};
 	virtual void TaskStarted() {};
 
 public:
 
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
 
 
 };

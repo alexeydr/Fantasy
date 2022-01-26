@@ -6,6 +6,14 @@ void UEmojiWidget::SetNewEmoji(UTexture2D* Image)
 {
 	if (Emoji)
 	{
-		Emoji->SetBrushFromTexture(Image);
+		if (Image)
+		{
+			Emoji->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			Emoji->SetBrushFromTexture(Image);
+		}
+		else
+		{
+			Emoji->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 }

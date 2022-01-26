@@ -9,6 +9,18 @@
 #include "Task.generated.h"
 
 USTRUCT(BlueprintType)
+struct FRandomParticles : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UParticleSystem*> EmitterTemplates;
+
+};
+
+USTRUCT(BlueprintType)
 struct FBotTask : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -30,28 +42,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedChangePosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition", EditConditionHides))
 	FVector CharLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangePosition", EditConditionHides))
 	FRotator CharRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedInteractWithMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedInteractWithMesh", EditConditionHides))
 	UStaticMesh* MeshForInteract;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedChangeMeshPosition;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition", EditConditionHides))
 	FRotator MeshRotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition", EditConditionHides))
 	FVector AdditionalLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedChangeMeshPosition", EditConditionHides))
 	FVector NewScale;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -60,23 +72,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedSpawnParticle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle", EditConditionHides))
 	UParticleSystem* EmitterTemplate;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle", EditConditionHides))
 	FVector EmitterLocation;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle", EditConditionHides))
 	FRotator EmitterRotation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedSpawnParticle", EditConditionHides))
 	FVector EmitterScale;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedEmoji;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedEmoji"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "bNeedEmoji", EditConditionHides))
 	UTexture2D* EmojiTexture;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bSpawnRandomParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (RequiredAssetDataTags = "RowStructure=RandomParticles", EditCondition = "bSpawnRandomParticle", EditConditionHides))
+	UDataTable* AllRandomParticlesDT;
 
 	bool operator==(const FBotTask& BotTask)
 	{

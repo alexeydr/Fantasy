@@ -4,6 +4,7 @@
 #include "Character/MainCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
+#include "Components/DialogComponent.h"
 
 UEmojiComponent::UEmojiComponent()
 {
@@ -27,7 +28,10 @@ void UEmojiComponent::HideEmoji()
 	if (WidgetComp)
 	{
 		if (auto* Widget = WidgetComp->GetWidget())
+		{
+			SetEmojiWidget(nullptr);
 			Widget->SetVisibility(ESlateVisibility::Collapsed);
+		}
 
 		WidgetComp->SetVisibility(false);
 	}
@@ -49,11 +53,43 @@ void UEmojiComponent::ChangeMood(EMoodName NewMode)
 
 }
 
+void UEmojiComponent::OnDialogUpdated(EDialogStatus Status, AActor* Bot)
+{
+	if (Bot == GetOwner())
+	{
+		switch (Status)
+		{
+		case EDialogStatus::Started:
+			WatchEmoji();
+			break;
+
+		case EDialogStatus::TalkReplic:
+			if (RandomEmoji.Num() > 0)
+				SetEmojiWidget(RandomEmoji[FMath::RandRange(0, RandomEmoji.Num() - 1)]);
+			break;
+
+		case EDialogStatus::ReplicTalked:
+			SetEmojiWidget(nullptr);
+			break;
+
+		case EDialogStatus::Completed:
+			HideEmoji();
+			break;
+		}
+	}
+}
+
 void UEmojiComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	WidgetComp = GetOwner()->FindComponentByClass<UWidgetComponent>();
+	auto* DialogSubsys = GetOwner()->GetGameInstance()->GetSubsystem<UDialogSubsystem>();
+	auto* DialogComp = GetOwner()->FindComponentByClass<UDialogComponent>();
+	if (DialogComp && DialogSubsys && DialogComp->bCanStartRandomDialog)
+	{
+		DialogSubsys->OnDialogUpdateState.AddDynamic(this, &ThisClass::OnDialogUpdated);
+	}
 	
 }
 

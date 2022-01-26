@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
+#include "DialogSubsystem.h"
 #include "EmojiComponent.generated.h"
 
 class UEmojiWidget;
@@ -15,9 +16,8 @@ class AMainCharacter;
 UENUM(BlueprintType)
 enum class EMoodName : uint8
 {
-	StartedCast     UMETA(DisplayName = "Started"),
-	CastedCompleted      UMETA(DisplayName = "Casted"),
-	CooldownCompleted UMETA(DisplayName = "Cooldown Completed")
+	Test1     UMETA(DisplayName = "Test1"),
+	Test2      UMETA(DisplayName = "Test2")
 
 };
 
@@ -54,8 +54,14 @@ public:
 	void ChangeMood(EMoodName NewMode);
 
 protected:
-	// Called when the game starts
+
+	UFUNCTION()
+	void OnDialogUpdated(EDialogStatus Status, AActor* Bot);
+
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere)
+	TArray<UTexture2D*> RandomEmoji;
 
 	UPROPERTY(EditDefaultsOnly, meta = (RequiredAssetDataTags = "RowStructure=MoodState"))
 	UDataTable* AvailableMoods;
