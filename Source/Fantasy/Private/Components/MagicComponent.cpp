@@ -1,5 +1,9 @@
 #include "Components/MagicComponent.h"
+#include "Character/MainCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "SpellBase.h"
+#include "Components/AudioComponent.h"
 
 UMagicComponent::UMagicComponent()
 {
@@ -34,8 +38,15 @@ void UMagicComponent::BeginPlay()
 void UMagicComponent::CastSpell(const FSpell& Spell)
 {
 	DecreaseMana(Spell.Price);
-	if (auto* SpellActor = GetWorld()->SpawnActor<AActor>(Spell.ActorToSpawn))
+	if (auto* SpellActor = GetWorld()->SpawnActor<ASpellBase>(Spell.ActorToSpawn))
 	{
+		SpellActor->SpellStruct = Spell;
+
+		if (auto* AudioSystemComp = SpellActor->FindComponentByClass<UAudioComponent>())
+		{
+			AudioSystemComp->SetSound(Spell.Sound);
+			AudioSystemComp->Play();
+		}
 		if (auto* ParticleSystemComp = SpellActor->FindComponentByClass<UParticleSystemComponent>())
 		{
 			ParticleSystemComp->SetTemplate(Spell.Particle);
@@ -54,10 +65,10 @@ void UMagicComponent::PrepareForCastSpell(FSpell& Spell)
 		
 		int ArrayNumber = CooldownSpells.Add(&Spell);
 
+		CastSpell(Spell);
+
 		if (OnSpellsStatusChanged.IsBound())
 			OnSpellsStatusChanged.Broadcast(ESpellStatus::StartedCast, Spell);
-
-		CastSpell(Spell);
 
 		FTimerDelegate TD;
 		FTimerHandle TH;
@@ -121,4 +132,47 @@ void UMagicComponent::AddSpellsFromDT()
 			ActiveSpells.Add(*row);
 		}
 	}
+}
+
+FText USalableSpell::GetSalableItemName_Implementation()
+{
+	return SpellForSale.Name;
+}
+
+FText USalableSpell::GetSalableItemDesc_Implementation()
+{
+	return FText();
+}
+
+UTexture2D* USalableSpell::GetSalableItemTexture_Implementation()
+{
+	return SpellForSale.Texture;
+}
+
+float USalableSpell::GetSalableItemPrice_Implementation()
+{
+	return 10.0f;
+}
+
+void USalableSpell::OnItemSaled_Implementation(UObject* WCO)
+{
+	if (auto* MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(WCO, 0)))
+	{
+		if (auto* MagicComp = MainChar->GetMagicComponent())
+		{
+			MagicComp->AddNewSpell(SpellForSale);
+		}
+	}
+}
+
+bool USalableSpell::CheckAlreadyBought_Implementation(UObject* WCO)
+{
+	if (auto* MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(WCO, 0)))
+	{
+		if (auto* MagicComp = MainChar->GetMagicComponent())
+		{
+			return MagicComp->GetActiveSpells().Contains(SpellForSale);
+		}
+	}
+	return true;
 }

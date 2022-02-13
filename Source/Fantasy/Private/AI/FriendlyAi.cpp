@@ -19,6 +19,7 @@ AFriendlyAi::AFriendlyAi()
 	WidgetComp = CreateDefaultSubobject<UWidgetComponent>("WidgetComponent");
 	EmojiComp = CreateDefaultSubobject<UEmojiComponent>("EmojiComponent");
 	DialogComp = CreateDefaultSubobject<UDialogComponent>("DialogComponent");
+	
 }
 
 void AFriendlyAi::BeginPlay()
@@ -40,7 +41,7 @@ void AFriendlyAi::TaskStarted()
 {
 	if (CurrentTask.bSpawnRandomParticle && CurrentTask.AllRandomParticlesDT)
 	{
-		TArray<UParticleSystem*> Emitters;
+		TArray<FRandomParticles*> DTElements;
 		FString ContextString;
 		TArray<FName> RowNames;
 		RowNames = CurrentTask.AllRandomParticlesDT->GetRowNames();
@@ -49,16 +50,17 @@ void AFriendlyAi::TaskStarted()
 			FRandomParticles* row = CurrentTask.AllRandomParticlesDT->FindRow<FRandomParticles>(name, ContextString);
 			if (row)
 			{
-				Emitters = row->EmitterTemplates;
+				DTElements.Add(row);
 			}
 		}
-		if (Emitters.Num() > 0)
+		if (DTElements.Num() > 0)
 		{
 			if (RandomParticleComp)
 			{
 				RandomParticleComp->DestroyComponent();
 			}
-			RandomParticleComp = UGameplayStatics::SpawnEmitterAtLocation(this, Emitters[FMath::RandRange(0, Emitters.Num() - 1)], GetActorLocation());
+			auto* RandomElementFromDT = DTElements[FMath::RandRange(0, DTElements.Num() - 1)];
+			RandomParticleComp = UGameplayStatics::SpawnEmitterAtLocation(this, RandomElementFromDT->EmitterTemplate, GetActorLocation(), FRotator(), RandomElementFromDT->EmitterScale);
 		}
 	}
 

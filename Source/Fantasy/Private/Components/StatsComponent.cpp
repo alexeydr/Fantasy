@@ -32,6 +32,20 @@ void UStatsComponent::AddHealth(float Param)
 		OnHealthChangedDelegate.Broadcast(Health);
 }
 
+void UStatsComponent::AddMoney(float Param)
+{
+	Money += Param;
+	if (OnMoneyChanged.IsBound())
+		OnMoneyChanged.Broadcast(Money);
+}
+
+void UStatsComponent::SubstractMoney(float Param)
+{
+	Money -= Param;
+	if (OnMoneyChanged.IsBound())
+		OnMoneyChanged.Broadcast(Money);
+}
+
 bool UStatsComponent::CheckCanLife()
 {
 	return !FMath::IsNearlyZero(Health);

@@ -9,6 +9,7 @@
 
 class UHorizontalBox;
 class USpellWidget;
+class UMagicComponent;
 
 UCLASS()
 class FANTASY_API UMainMagicWidget : public UMainWidget
@@ -20,7 +21,8 @@ protected:
 	UFUNCTION()
 	void UpdateMana(float NewManaValue);
 
-	void CreateActiveSpells(const TArray<FSpell>& Spells);
+	UFUNCTION()
+	void CreateActiveSpells();
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -33,5 +35,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<USpellWidget> SpellWidgetClass;
+
+	UPROPERTY()
+	UMagicComponent* MagicComp;
 
 };

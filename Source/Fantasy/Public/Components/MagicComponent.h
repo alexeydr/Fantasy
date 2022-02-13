@@ -5,7 +5,19 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
+#include "Interfaces/SaleableInterface.h"
 #include "MagicComponent.generated.h"
+
+class USoundBase;
+
+UENUM(BlueprintType)
+enum class ESpellType : uint8
+{
+	Projectile     UMETA(DisplayName = "Projectile"),
+	Shield      UMETA(DisplayName = "Shield"),
+	Zone UMETA(DisplayName = "Zone")
+
+};
 
 UENUM(BlueprintType)
 enum class ESpellStatus : uint8
@@ -42,18 +54,54 @@ public:
 	UTexture2D* Texture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Sound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> ActorToSpawn; //null if nothing needs to be spawned
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESpellType TypeSpell;
+
+	//https://benui.ca/unreal/uproperty-edit-condition-can-edit-change/  --- hide property if TypeSpell != Zone
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector2D ZoneSize;
 
 	UPROPERTY()
 	bool bIsActiveCooldown;
 
-	bool operator==(const FSpell& Spell)
+	friend bool operator==(const FSpell& SpellL, const FSpell& SpellR)
 	{
-		return Name.ToString() == Spell.Name.ToString();
+		return SpellL.Name.ToString() == SpellR.Name.ToString();
 	}
+
 
 };
 
+UCLASS(BlueprintType)
+class USalableSpell : public UObject, public ISaleableInterface
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(BlueprintReadWrite)
+	FSpell SpellForSale;
+
+	FText GetSalableItemName_Implementation();
+
+	FText GetSalableItemDesc_Implementation();
+
+	class UTexture2D* GetSalableItemTexture_Implementation();
+
+	float GetSalableItemPrice_Implementation();
+
+	void OnItemSaled_Implementation(UObject* WCO);
+
+	bool CheckAlreadyBought_Implementation(UObject* WCO);
+};
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSpellsCountChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpellsStatusChanged, ESpellStatus, Status, const FSpell&, Spell);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnManaValueChanged, float, NewMana);
 
@@ -84,11 +132,24 @@ public:
 	UFUNCTION(BlueprintPure)
 	const TArray<FSpell>& GetActiveSpells() const { return ActiveSpells; };
 
+	UFUNCTION(BlueprintCallable)
+	void AddNewSpell(const FSpell& NewSpell)
+	{
+		ActiveSpells.Add(NewSpell);
+
+		if (OnSpellsCountChanged.IsBound())
+			OnSpellsCountChanged.Broadcast();
+	};
+
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnManaValueChanged OnManaValueChanged;
 
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnSpellsStatusChanged OnSpellsStatusChanged;
+
+	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
+	FOnSpellsCountChanged OnSpellsCountChanged;
+	
 
 protected:
 

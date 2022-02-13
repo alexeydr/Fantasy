@@ -8,14 +8,15 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 ABaseAi::ABaseAi()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	GetCharacterMovement()->SetUpdateNavAgentWithOwnersCollisions(true);
 	GetCharacterMovement()->UpdateNavAgent(*GetCapsuleComponent());
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 }
 
 // Called when the game starts or when spawned
@@ -24,7 +25,7 @@ void ABaseAi::BeginPlay()
 	Super::BeginPlay();
 
 	AiController = Cast<AAIController>(GetController());
-	if (AiController)
+	if (AiController && AllAvailableTasksDT)
 	{
 		AiController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveCompleted);
 		GoToNextTask();
@@ -65,14 +66,19 @@ void ABaseAi::GoToNextTask()
 	auto* NextTask = GetNextTask();
 	if (AiController && NextTask)
 	{
+		if (CurrentTaskActor)
+		{
+			CurrentTaskActor->bIsEmptyTask = true;
+		}
+
 		float NearestPoint = FLT_MAX;
 		ATask* NearestTask = nullptr;
 		for (TActorIterator<ATask> TaskItr(GetWorld()); TaskItr; ++TaskItr)
 		{
-			if (TaskItr->CurrentTaskName == NextTask->Name && TaskItr->bIsEmptyTask && NearestPoint > TaskItr->GetSquaredDistanceTo(this))
+			if (TaskItr->CurrentTaskName == NextTask->Name && TaskItr->bIsEmptyTask && NearestPoint > TaskItr->GetDistanceTo(this))
 			{
 				NearestTask = *TaskItr;
-				NearestPoint = TaskItr->GetSquaredDistanceTo(this);
+				NearestPoint = TaskItr->GetDistanceTo(this);
 			}
 		}
 		if (NearestTask)
@@ -84,7 +90,8 @@ void ABaseAi::GoToNextTask()
 			return;
 		}
 		CurrentTask = *NextTask;
-		GoToNextTask();
+		FTimerHandle Th;
+		GetWorld()->GetTimerManager().SetTimer(Th, this, &ABaseAi::OnBlockedMovement, 0.5f, false);
 	}
 }
 
@@ -92,6 +99,7 @@ void ABaseAi::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type
 {
 	if (!MoveTarget)
 	{
+		UE_LOG(LogTemp, Error, TEXT("%s NameBot %i move result"),*GetName(), Result);
 		if (Result == EPathFollowingResult::Success)
 		{
 			StartTaskAction();
@@ -99,15 +107,30 @@ void ABaseAi::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type
 
 		if (Result == EPathFollowingResult::Blocked)
 		{
-			GoToNextTask();
+			FTimerHandle Th;
+			GetWorld()->GetTimerManager().SetTimer(Th, this, &ABaseAi::OnBlockedMovement, 0.5f, false);
+			
 		}
 	}
 	
 }
 
+void ABaseAi::OnBlockedMovement()
+{
+	GoToNextTask();
+}
+
 void ABaseAi::StartTaskAction()
 {
 	bTaskStarted = true;
+
+	if (AudioComponent)
+	{
+		AudioComponent->SetSound(CurrentTask.SoundForTask);
+		AudioComponent->SetActive(true);
+		AudioComponent->Play();
+	}
+
 	if (CurrentTaskActor)
 	{
 		SetActorRotation(CurrentTaskActor->GetActorRotation());
@@ -124,7 +147,7 @@ void ABaseAi::StartTaskAction()
 		{
 			TaskMesh->Destroy();
 		}
-		GetMesh()->SetVisibility(false);
+		GetMesh()->SetVisibility(false, true);
 	}
 
 	if (CurrentTask.bNeedSpawnParticle)
@@ -145,6 +168,13 @@ void ABaseAi::StartTaskAction()
 void ABaseAi::OnTaskCompleted()
 {
 	TaskCompleted();
+
+	if (AudioComponent)
+	{
+		AudioComponent->SetSound(nullptr);
+		AudioComponent->SetActive(false);
+		AudioComponent->Stop();
+	}
 
 	if (CurrentTask.bNeedInteractWithMesh)
 	{
@@ -177,7 +207,7 @@ void ABaseAi::OnTaskCompleted()
 	}
 
 	if (CurrentTask.bIsHomeTask)
-		GetMesh()->SetVisibility(true);
+		GetMesh()->SetVisibility(true, true);
 
 	if (EmitterComponent)
 		EmitterComponent->DestroyComponent();
@@ -193,7 +223,7 @@ void ABaseAi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (AiController && MoveTarget)
+	if (AiController && MoveTarget && bCanMove)
 	{
 		AiController->MoveToActor(MoveTarget);		
 	}

@@ -8,6 +8,9 @@
 #include "Animation/AnimSequence.h"
 #include "Task.generated.h"
 
+class ABaseAi;
+class USoundBase;
+
 USTRUCT(BlueprintType)
 struct FRandomParticles : public FTableRowBase
 {
@@ -16,7 +19,10 @@ struct FRandomParticles : public FTableRowBase
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UParticleSystem*> EmitterTemplates;
+	UParticleSystem* EmitterTemplate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector EmitterScale = FVector(1.f,1.f,1.f);
 
 };
 
@@ -38,6 +44,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimSequence* Animation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* SoundForTask;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bNeedChangePosition;
@@ -115,7 +124,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString CurrentTaskName;
 
+	UPROPERTY()
 	bool bIsEmptyTask = true;
+
 
 protected:
 

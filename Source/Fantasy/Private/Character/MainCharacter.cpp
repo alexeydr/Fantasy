@@ -4,12 +4,16 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/MagicComponent.h"
 #include "Camera/CameraComponent.h"
+#include "SpellBase.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/StatsComponent.h"
+#include "Components/InteractionComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/ChildActorComponent.h"
+#include "Interfaces/InteractionInterface.h"
 
 AMainCharacter::AMainCharacter()
 {
-
-
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 600.f;
@@ -26,6 +30,7 @@ AMainCharacter::AMainCharacter()
 
 	MagicComp = CreateDefaultSubobject<UMagicComponent>(TEXT("Magic"));
 	StatsComp = CreateDefaultSubobject<UStatsComponent>(TEXT("Stats"));
+	InteractionComp = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interact"));
 
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -36,7 +41,6 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AMainCharacter::Tick(float DeltaTime)
@@ -58,6 +62,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("CastSpell1", IE_Pressed, this, &AMainCharacter::CastSpellTemplate<1>);
 	PlayerInputComponent->BindAction("CastSpell2", IE_Pressed, this, &AMainCharacter::CastSpellTemplate<2>);
 	PlayerInputComponent->BindAction("CastSpell3", IE_Pressed, this, &AMainCharacter::CastSpellTemplate<3>);
+	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &AMainCharacter::OnCharacterInteraction);
 }
 
 void AMainCharacter::MoveForward(float Value)
@@ -90,4 +95,25 @@ void AMainCharacter::CastSpell(int Number)
 	{
 		MagicComp->PrepareForCastSpell(Number);
 	}
+}
+
+void AMainCharacter::OnCharacterInteraction()
+{
+	if (InteractionActor && InteractionActor->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+		IInteractionInterface::Execute_OnInteraction(InteractionActor);
+}
+
+bool AMainCharacter::IsHasShield()
+{
+	TArray<AActor*> Spells;
+	UGameplayStatics::GetAllActorsOfClass(this, ASpellBase::StaticClass(), Spells);
+	for (auto* Spell : Spells)
+	{
+		auto* MagicSpell = Cast<ASpellBase>(Spell);
+		if (MagicSpell && MagicSpell->SpellStruct.TypeSpell == ESpellType::Shield)
+		{
+			return true;
+		}
+	}
+	return false;
 }

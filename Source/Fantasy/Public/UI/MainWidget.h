@@ -13,6 +13,7 @@ class FANTASY_API UMainWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+
 protected:
 
 	UFUNCTION()
@@ -29,6 +30,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* HealthText;
-
 
 };

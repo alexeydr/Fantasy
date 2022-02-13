@@ -44,13 +44,15 @@ void UDialogSubsystem::StartDialogs()
 			return;
 
 		auto* Base = Cast<ABaseAi>(BotA);
-		if (!BotA->FindComponentByClass<UDialogComponent>() || HasCooldown(BotA) || BotsInDialog.Contains(BotA) || Base->bTaskStarted)
+		auto* DialogComp = BotA->FindComponentByClass<UDialogComponent>();
+		if (!DialogComp || !DialogComp->bCanStartRandomDialog || HasCooldown(BotA) || BotsInDialog.Contains(BotA) || Base->bTaskStarted)
 			continue;
 
 		for (auto* BotB : AllBots)
 		{
 			Base = Cast<ABaseAi>(BotB);
-			if (!BotB->FindComponentByClass<UDialogComponent>() || BotsInDialog.Contains(BotB) || HasCooldown(BotB) || Base->bTaskStarted)
+			DialogComp = BotB->FindComponentByClass<UDialogComponent>();
+			if (!DialogComp || !DialogComp->bCanStartRandomDialog  || HasCooldown(BotB) || BotsInDialog.Contains(BotB) || Base->bTaskStarted)
 				continue;
 
 			if (BotA != BotB &&	BotA->GetDistanceTo(BotB) < 1000.f)

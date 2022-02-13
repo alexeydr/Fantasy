@@ -9,13 +9,15 @@ void UMainMagicWidget::NativeConstruct()
 	
 	if (MainChar)
 	{
-		if (auto* MagicComp = MainChar->GetMagicComponent())
+		MagicComp = MainChar->GetMagicComponent();
+		if (MagicComp)
 		{
 			UpdateMana(MagicComp->GetMana());
 
 			MagicComp->OnManaValueChanged.AddDynamic(this, &ThisClass::UpdateMana);
 
-			CreateActiveSpells(MagicComp->GetActiveSpells());
+			MagicComp->OnSpellsCountChanged.AddDynamic(this, &ThisClass::CreateActiveSpells);
+			CreateActiveSpells();
 		}
 	}
 	
@@ -24,22 +26,22 @@ void UMainMagicWidget::NativeConstruct()
 
 void UMainMagicWidget::NativeDestruct()
 {
-	if (MainChar)
+	if (MainChar && MagicComp)
 	{
-		if (auto* MagicComp = MainChar->GetMagicComponent())
-		{
-			MagicComp->OnManaValueChanged.RemoveAll(this);
-		}
+		MagicComp->OnManaValueChanged.RemoveAll(this);
+	
 	}
 	Super::NativeDestruct();
 }
 
-void UMainMagicWidget::CreateActiveSpells(const TArray<FSpell>& Spells)
+void UMainMagicWidget::CreateActiveSpells()
 {
-	if (!SpellWidgetClass || !SpellsBox)
+	if (!MagicComp || !SpellWidgetClass || !SpellsBox)
 		return;
 
-	for (const auto& Spell: Spells)
+	SpellsBox->ClearChildren();
+
+	for (const auto& Spell: MagicComp->GetActiveSpells())
 	{
 		auto* Widget = CreateWidget<USpellWidget>(GetWorld(), SpellWidgetClass);
 		if (Widget)

@@ -13,6 +13,7 @@ class UDataTable;
 class AAIController;
 class AStaticMeshActor;
 class UParticleSystemComponent;
+class UAudioComponent;
 
 UCLASS()
 class FANTASY_API ABaseAi : public ACharacter
@@ -42,6 +43,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> SelectedTasks;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
+	UAudioComponent* AudioComponent;
+
 	UPROPERTY()
 	FBotTask CurrentTask;
 
@@ -57,12 +61,17 @@ protected:
 	UPROPERTY()
 	UParticleSystemComponent* EmitterComponent;
 
+	bool bCanMove = true;
+
 	FBotTask* GetNextTask();
 
 	void StartTaskAction();
 
 	UFUNCTION()
 	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
+
+	UFUNCTION()
+	void OnBlockedMovement();
 
 	UFUNCTION()
 	void OnTaskCompleted();
