@@ -4,16 +4,22 @@
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
 
-void USpellWidget::InitializeWidget(const FSpell& Spell)
+void USpellWidget::InitializeWidget(const FSpell& Spell, int SpellNumber)
 {
 	if (auto* MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
 	{
 		MagicComp = MainChar->GetMagicComponent();
-		if (MagicComp)
+		if (MagicComp && Number)
 		{
+			Number->SetText(FText::AsNumber(SpellNumber));
 			MagicComp->OnSpellsStatusChanged.AddDynamic(this, &ThisClass::UpdateActiveSpell);
 			ActiveSpell = Spell;
 			SpellImage->SetBrushFromTexture(Spell.Texture);
+			if (Spell.bIsActiveCooldown)
+			{
+				SpellImage->SetBrushFromTexture(InactiveTexture);
+				SetRenderOpacity(1.f);
+			}
 		}
 	}
 }

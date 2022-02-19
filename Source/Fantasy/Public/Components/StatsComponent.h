@@ -42,6 +42,8 @@ public:
 		return (Money - Price >= 0);
 	};
 
+	bool IsAlive();
+
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnHealthChanged OnHealthChangedDelegate;
 
@@ -56,16 +58,14 @@ public:
 
 protected:
 
-	bool CheckCanLife();
-
 	void Dying();
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	UPROPERTY(EditAnywhere)
 	float Health = 100.f;
 
-	UPROPERTY(EditAnywhere, meta = (ClampMin = "0", ClampMax = "10000", UIMin = "0", UIMax = "10000"))
+	UPROPERTY(EditAnywhere)
 	float Money = 100.f;
 
 public:	

@@ -11,7 +11,7 @@ class UStatsComponent;
 class UAIPerceptionComponent;
 class AMainCharacter;
 class USphereComponent;
-class UAnimSequence;
+class UAnimationAsset;
 
 UENUM(BlueprintType)
 enum class EAiState : uint8
@@ -19,6 +19,7 @@ enum class EAiState : uint8
 	None,
 	Block,
 	Attack,
+	Dead,
 	Hit
 };
 
@@ -38,10 +39,7 @@ public:
 
 protected:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MoveTargetDistance;
-
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStatsComponent* StatsComponent;
 	
 	UPROPERTY()
@@ -63,13 +61,25 @@ protected:
 	void OnCharacterCastSpell(ESpellStatus Status, const FSpell& Spell);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UAnimSequence* AttackAsset;
+	UAnimationAsset* AttackAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UAnimSequence* BlockAsset;
+	UAnimationAsset* BlockAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UAnimSequence* HitAsset;
+	UAnimationAsset* HitAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UAnimationAsset* DeadAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AttackAngle = 90.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AttackRange = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AttackDistance = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Damage;
@@ -78,7 +88,7 @@ protected:
 
 	virtual void AttackResult() {};
 	virtual void GoToAttackPosition() {};
-	virtual void DoDamage(float InDamage) {};
+	virtual UAnimationAsset* SelectAttack() {	return AttackAsset;	};
 
 	UFUNCTION()
 	void OnDeath();
@@ -96,6 +106,7 @@ protected:
 
 	void Attack();
 	void DodgeMagic();
+	bool IsCharacterInAttackRadius();
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

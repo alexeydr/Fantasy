@@ -17,13 +17,21 @@ protected:
 	TSubclassOf<AActor> MagicActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> IllusionClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MagicDelay;
 
 	UPROPERTY(BlueprintReadOnly)
 	AActor* SpawnedActor;
 
+	UPROPERTY(BlueprintReadOnly)
+	AActor* SpawnedIllusuion;
+
 	UFUNCTION()
 	void OnMagicDelayCompleted();
+
+	void SpawnIllusion();
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void AttackResult() override;

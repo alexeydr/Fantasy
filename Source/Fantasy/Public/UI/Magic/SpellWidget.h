@@ -9,6 +9,7 @@
 
 class UImage;
 class UTexture2D;
+class UTextBlock;
 
 UCLASS()
 class FANTASY_API USpellWidget : public UUserWidget
@@ -17,7 +18,7 @@ class FANTASY_API USpellWidget : public UUserWidget
 	
 public: 
 
-	void InitializeWidget(const FSpell& Spell);
+	void InitializeWidget(const FSpell& Spell, int SpellNumber);
 
 protected:
 
@@ -27,7 +28,10 @@ protected:
 	virtual void NativeDestruct() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	UImage* SpellImage;
+	UImage* SpellImage;	
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* Number;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture2D* InactiveTexture;

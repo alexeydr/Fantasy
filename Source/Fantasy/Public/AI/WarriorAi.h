@@ -15,7 +15,7 @@ class FANTASY_API AWarriorAi : public AEnemyAi
 	GENERATED_BODY()
 
 protected:
+
 	virtual void AttackResult() override;
 	virtual void GoToAttackPosition() override;
-	virtual void DoDamage(float InDamage) override;
 };

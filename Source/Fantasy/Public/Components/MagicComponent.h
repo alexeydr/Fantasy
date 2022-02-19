@@ -15,6 +15,7 @@ enum class ESpellType : uint8
 {
 	Projectile     UMETA(DisplayName = "Projectile"),
 	Shield      UMETA(DisplayName = "Shield"),
+	Heal      UMETA(DisplayName = "Heal"),
 	Zone UMETA(DisplayName = "Zone")
 
 };
@@ -39,7 +40,16 @@ public:
 	FText Name;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Price;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Mana;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CastTime;
@@ -73,8 +83,10 @@ public:
 	{
 		return SpellL.Name.ToString() == SpellR.Name.ToString();
 	}
-
-
+	bool operator==(FString SpellName) const
+	{
+		return SpellName == Name.ToString();
+	}
 };
 
 UCLASS(BlueprintType)
@@ -141,6 +153,18 @@ public:
 			OnSpellsCountChanged.Broadcast();
 	};
 
+	UFUNCTION(BlueprintCallable)
+	void SwapSpells(int FirstElementToSwap, int SecondElementToSwap)
+	{
+		if (!ActiveSpells.IsValidIndex(FirstElementToSwap) || !ActiveSpells.IsValidIndex(SecondElementToSwap))
+			return;
+
+		ActiveSpells.Swap(FirstElementToSwap, SecondElementToSwap);
+
+		if (OnSpellsCountChanged.IsBound())
+			OnSpellsCountChanged.Broadcast();
+	};
+
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnManaValueChanged OnManaValueChanged;
 
@@ -149,7 +173,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnSpellsCountChanged OnSpellsCountChanged;
-	
 
 protected:
 
@@ -165,7 +188,7 @@ protected:
 	void OnSpellCasted(const FSpell& SpellCompletedCast);
 
 	UFUNCTION()
-	void OnSpellCooldownCompleted(int Number);
+	void OnSpellCooldownCompleted(FSpell& Spell);
 
 	UPROPERTY(EditAnywhere, meta = (RequiredAssetDataTags = "RowStructure=Spell"))
 	UDataTable* AvailableSpells;
@@ -175,8 +198,6 @@ protected:
 
 	UPROPERTY()
 	TArray<FSpell> ActiveSpells;
-
-	TArray<FSpell*> CooldownSpells;
 
 	bool bCanCastSpell;
 	float CurrentCastSpell;

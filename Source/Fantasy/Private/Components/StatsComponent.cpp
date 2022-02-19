@@ -19,7 +19,7 @@ void UStatsComponent::DoDamage(float Damage)
 	if (OnDamageDelegate.IsBound())
 		OnDamageDelegate.Broadcast(Damage);
 
-	if (!CheckCanLife())
+	if (!IsAlive())
 	{
 		Dying();
 	}
@@ -46,22 +46,15 @@ void UStatsComponent::SubstractMoney(float Param)
 		OnMoneyChanged.Broadcast(Money);
 }
 
-bool UStatsComponent::CheckCanLife()
+bool UStatsComponent::IsAlive()
 {
-	return !FMath::IsNearlyZero(Health);
+	return Health > 0.f;
 }
 
 void UStatsComponent::Dying()
 {
-
 	if (OnDeathDelegate.IsBound())
 		OnDeathDelegate.Broadcast();
-
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		OwnerActor->Destroy();
-	}
 }
 
 void UStatsComponent::BeginPlay()

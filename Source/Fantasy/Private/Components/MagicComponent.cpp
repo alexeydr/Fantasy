@@ -37,7 +37,7 @@ void UMagicComponent::BeginPlay()
 
 void UMagicComponent::CastSpell(const FSpell& Spell)
 {
-	DecreaseMana(Spell.Price);
+	DecreaseMana(Spell.Mana);
 	if (auto* SpellActor = GetWorld()->SpawnActor<ASpellBase>(Spell.ActorToSpawn))
 	{
 		SpellActor->SpellStruct = Spell;
@@ -57,14 +57,12 @@ void UMagicComponent::CastSpell(const FSpell& Spell)
 
 void UMagicComponent::PrepareForCastSpell(FSpell& Spell)
 {
-	if (Mana >= Spell.Price && !Spell.bIsActiveCooldown)
+	if (Mana >= Spell.Mana && !Spell.bIsActiveCooldown)
 	{
 		CurrentCastSpell = Spell.CastTime;
 		bCanCastSpell = false;
 		Spell.bIsActiveCooldown = true;
 		
-		int ArrayNumber = CooldownSpells.Add(&Spell);
-
 		CastSpell(Spell);
 
 		if (OnSpellsStatusChanged.IsBound())
@@ -77,7 +75,7 @@ void UMagicComponent::PrepareForCastSpell(FSpell& Spell)
 
 		FTimerDelegate TimerDel;
 		FTimerHandle TimerHandle;
-		TimerDel.BindUFunction(this, FName("OnSpellCooldownCompleted"), ArrayNumber);
+		TimerDel.BindUFunction(this, FName("OnSpellCooldownCompleted"), Spell);
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle, TimerDel, Spell.Cooldown, false);
 	}
 }
@@ -94,7 +92,6 @@ void UMagicComponent::PrepareForCastSpell(int SpellNumber)
 void UMagicComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 }
 
 void UMagicComponent::OnSpellCasted(const FSpell& SpellCompletedCast)
@@ -105,14 +102,19 @@ void UMagicComponent::OnSpellCasted(const FSpell& SpellCompletedCast)
 		OnSpellsStatusChanged.Broadcast(ESpellStatus::CastedCompleted, SpellCompletedCast);
 }
 
-void UMagicComponent::OnSpellCooldownCompleted(int Number)
+void UMagicComponent::OnSpellCooldownCompleted(FSpell& Spell)
 {
-	if (CooldownSpells.Num() > Number)
+	if  (Spell.bIsActiveCooldown)
 	{
-		CooldownSpells[Number]->bIsActiveCooldown = false;
+		int Number = ActiveSpells.Find(Spell);
+		if (Number >= 0)
+		{
+			ActiveSpells[Number].bIsActiveCooldown = false;
+		}
 
 		if (OnSpellsStatusChanged.IsBound())
-			OnSpellsStatusChanged.Broadcast(ESpellStatus::CooldownCompleted, *CooldownSpells[Number]);
+			OnSpellsStatusChanged.Broadcast(ESpellStatus::CooldownCompleted, Spell);
+
 	}
 	
 }
@@ -141,7 +143,7 @@ FText USalableSpell::GetSalableItemName_Implementation()
 
 FText USalableSpell::GetSalableItemDesc_Implementation()
 {
-	return FText();
+	return SpellForSale.Description;
 }
 
 UTexture2D* USalableSpell::GetSalableItemTexture_Implementation()
@@ -151,7 +153,7 @@ UTexture2D* USalableSpell::GetSalableItemTexture_Implementation()
 
 float USalableSpell::GetSalableItemPrice_Implementation()
 {
-	return 10.0f;
+	return SpellForSale.Price;
 }
 
 void USalableSpell::OnItemSaled_Implementation(UObject* WCO)

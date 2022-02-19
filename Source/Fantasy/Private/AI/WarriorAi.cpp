@@ -5,7 +5,7 @@
 
 void AWarriorAi::AttackResult()
 {
-	if (MainChar && !MainChar->IsHasShield() && GetDistanceTo(MainChar) < 200.f)
+	if (MainChar && !MainChar->IsHasShield() && IsCharacterInAttackRadius() && GetDistanceTo(MainChar) < AttackDistance + AttackRange)
 	{
 		if (auto* StatsComp = MainChar->GetStatsComponent())
 		{
@@ -21,9 +21,4 @@ void AWarriorAi::GoToAttackPosition()
 	{
 		MoveTarget = MainChar;
 	}
-}
-
-void AWarriorAi::DoDamage(float InDamage)
-{
-	
 }

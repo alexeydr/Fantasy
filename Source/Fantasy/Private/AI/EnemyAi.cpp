@@ -8,7 +8,7 @@
 #include "SpellBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Perception/AIPerceptionComponent.h"
-#include "Animation/AnimSequence.h"
+#include "Animation/AnimationAsset.h"
 #include "Components/SphereComponent.h"
 
 AEnemyAi::AEnemyAi()
@@ -38,7 +38,7 @@ void AEnemyAi::ChangeFightModeStatus(bool bNewStatus)
 void AEnemyAi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	bool bCanFight = MoveTarget && GetDistanceTo(MoveTarget) <= MoveTargetDistance;
+	bool bCanFight = StatsComponent && StatsComponent->IsAlive() && MoveTarget && GetDistanceTo(MoveTarget) <= AttackDistance;
 	ChangeFightModeStatus(bCanFight);
 	if (bCanFight)
 	{
@@ -59,14 +59,12 @@ void AEnemyAi::Tick(float DeltaTime)
 		case EAiState::Attack:
 			AttackResult();
 			break;
+		case EAiState::Dead:
+			Destroy();
+			break;
 		}
 		CurrentState = EAiState::None;
 	}
-
-}
-
-void AEnemyAi::OnDeath()
-{
 
 }
 
@@ -74,7 +72,7 @@ void AEnemyAi::OnCharacterCastSpell(ESpellStatus Status, const FSpell& Spell)
 {
 	if (bFightModeActive && MoveTarget && Status == ESpellStatus::StartedCast)
 	{
-		if (GetDistanceTo(MoveTarget) <= MoveTargetDistance && Spell.TypeSpell != ESpellType::Shield)
+		if (GetDistanceTo(MoveTarget) <= AttackDistance && Spell.TypeSpell != ESpellType::Shield)
 		{
 			Attack();
 			return;
@@ -134,6 +132,21 @@ void AEnemyAi::OnCompBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	}
 }
 
+bool AEnemyAi::IsCharacterInAttackRadius()
+{
+	if (MainChar)
+	{
+		const auto& CharFW = MainChar->GetActorForwardVector().GetSafeNormal();
+		const auto& Diff = (GetActorLocation() - MainChar->GetActorLocation()).GetSafeNormal();
+		if (FVector::DotProduct(CharFW, Diff) > FMath::Cos(AttackAngle / 2))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 ////////////////////// ANIMATIONS
 
 void AEnemyAi::DodgeMagic()
@@ -151,7 +164,10 @@ void AEnemyAi::DodgeMagic()
 
 void AEnemyAi::OnDidDamage(float InDamage)
 {
-	DoDamage(InDamage);
+	if (CurrentState != EAiState::Block && StatsComponent)
+	{
+		StatsComponent->DoDamage(InDamage);
+	}
 
 	if (CurrentState != EAiState::None)
 		return;
@@ -176,5 +192,16 @@ void AEnemyAi::Attack()
 	{
 		MovementComp->DisableMovement();
 	}
-	GetMesh()->PlayAnimation(AttackAsset, false);
+	GetMesh()->PlayAnimation(SelectAttack(), false);
+}
+
+void AEnemyAi::OnDeath()
+{
+	if (MovementComp)
+	{
+		MovementComp->DisableMovement();
+		bUseControllerRotationYaw = false;
+	}
+	CurrentState = EAiState::Dead;
+	GetMesh()->PlayAnimation(DeadAsset, false);
 }

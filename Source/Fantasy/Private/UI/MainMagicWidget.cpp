@@ -41,12 +41,17 @@ void UMainMagicWidget::CreateActiveSpells()
 
 	SpellsBox->ClearChildren();
 
+	int Index = 0;
 	for (const auto& Spell: MagicComp->GetActiveSpells())
 	{
+		if (Index > 2)
+			break;
+
+		Index++;
 		auto* Widget = CreateWidget<USpellWidget>(GetWorld(), SpellWidgetClass);
 		if (Widget)
 		{
-			Widget->InitializeWidget(Spell);
+			Widget->InitializeWidget(Spell, Index);
 			SpellsBox->AddChild(Widget);
 		}
 	}
