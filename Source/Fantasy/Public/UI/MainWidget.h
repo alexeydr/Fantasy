@@ -17,6 +17,9 @@ class FANTASY_API UMainWidget : public UUserWidget
 protected:
 
 	UFUNCTION()
+	void UpdateMoney(float NewMoneyValue);
+
+	UFUNCTION()
 	void OnDestroyedPlayer(AActor* DestroyedActor);
 
 	UFUNCTION()
@@ -30,5 +33,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* HealthText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* MoneyText;
 
 };

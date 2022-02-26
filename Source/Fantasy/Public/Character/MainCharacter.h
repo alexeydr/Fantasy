@@ -10,7 +10,9 @@ class USpringArmComponent;
 class UCameraComponent;
 class UMagicComponent;
 class UStatsComponent;
+class UChildActorComponent;
 class UInteractionComponent;
+class ACharacterItem;
 
 UCLASS()
 class FANTASY_API AMainCharacter : public ACharacter
@@ -22,6 +24,9 @@ public:
 	AMainCharacter();
 
 protected:
+
+	UPROPERTY()
+	ACharacterItem* AttachedActor;
 
 	UPROPERTY()
 	AActor* InteractionActor;
@@ -67,6 +72,9 @@ public:
 	AActor* GetInteractionActor() const	{ return InteractionActor; };
 
 	UFUNCTION(BlueprintPure)
+	ACharacterItem* GetAttachedActor() const { return AttachedActor; };
+
+	UFUNCTION(BlueprintPure)
 	UMagicComponent* GetMagicComponent() const { return MagicComp; };
 
 	UFUNCTION(BlueprintPure)
@@ -74,6 +82,8 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	UCameraComponent* GetCameraComponent() const { return FollowCamera; };
+
+	void EquipNewItem(ACharacterItem* NewEquipedItem);
 
 	virtual void Tick(float DeltaTime) override;
 

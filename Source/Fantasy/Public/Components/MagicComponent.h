@@ -174,6 +174,9 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnSpellsCountChanged OnSpellsCountChanged;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxMana = 100.f;
+
 protected:
 
 	void AddSpellsFromDT();
@@ -193,7 +196,7 @@ protected:
 	UPROPERTY(EditAnywhere, meta = (RequiredAssetDataTags = "RowStructure=Spell"))
 	UDataTable* AvailableSpells;
 
-	UPROPERTY(EditAnywhere, meta = (ClampMin = "0", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	UPROPERTY(EditAnywhere)
 	float Mana = 100.f;
 
 	UPROPERTY()

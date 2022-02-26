@@ -15,7 +15,6 @@ void UMainMagicWidget::NativeConstruct()
 			UpdateMana(MagicComp->GetMana());
 
 			MagicComp->OnManaValueChanged.AddDynamic(this, &ThisClass::UpdateMana);
-
 			MagicComp->OnSpellsCountChanged.AddDynamic(this, &ThisClass::CreateActiveSpells);
 			CreateActiveSpells();
 		}

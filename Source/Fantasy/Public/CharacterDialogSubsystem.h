@@ -13,5 +13,8 @@ UCLASS()
 class FANTASY_API UCharacterDialogSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
-	
+
+public:
+
+
 };

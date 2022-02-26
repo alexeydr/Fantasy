@@ -56,6 +56,9 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintReadOnly)
 	FOnDeath OnDeathDelegate;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxHealth = 100.f;
+
 protected:
 
 	void Dying();

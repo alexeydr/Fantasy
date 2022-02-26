@@ -13,7 +13,8 @@ UMagicComponent::UMagicComponent()
 
 void UMagicComponent::DecreaseMana(float Value)
 {
-	Mana -= Value;
+	float Result = Mana - Value;
+	Mana = Result < 0 ? 0 : Result;
 
 	if (OnManaValueChanged.IsBound())
 		OnManaValueChanged.Broadcast(Mana);
@@ -21,8 +22,8 @@ void UMagicComponent::DecreaseMana(float Value)
 
 void UMagicComponent::AddMana(float Value)
 {
-
-	Mana += Value;
+	float Result = Mana + Value;
+	Mana = Result > MaxMana ? MaxMana : Result;
 
 	if (OnManaValueChanged.IsBound())
 		OnManaValueChanged.Broadcast(Mana);

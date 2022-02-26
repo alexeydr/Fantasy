@@ -11,7 +11,9 @@ UStatsComponent::UStatsComponent()
 
 void UStatsComponent::DoDamage(float Damage)
 {
-	Health -= Damage;
+
+	float Result = Health - Damage;
+	Health = Result < 0 ? 0 : Result;
 
 	if (OnHealthChangedDelegate.IsBound())
 		OnHealthChangedDelegate.Broadcast(Health);
@@ -27,7 +29,9 @@ void UStatsComponent::DoDamage(float Damage)
 
 void UStatsComponent::AddHealth(float Param)
 {
-	Health += Param;
+	float Result = Health + Param;
+	Health = Result > MaxHealth ? MaxHealth : Result;
+
 	if (OnHealthChangedDelegate.IsBound())
 		OnHealthChangedDelegate.Broadcast(Health);
 }
@@ -35,6 +39,7 @@ void UStatsComponent::AddHealth(float Param)
 void UStatsComponent::AddMoney(float Param)
 {
 	Money += Param;
+
 	if (OnMoneyChanged.IsBound())
 		OnMoneyChanged.Broadcast(Money);
 }
@@ -42,6 +47,7 @@ void UStatsComponent::AddMoney(float Param)
 void UStatsComponent::SubstractMoney(float Param)
 {
 	Money -= Param;
+
 	if (OnMoneyChanged.IsBound())
 		OnMoneyChanged.Broadcast(Money);
 }

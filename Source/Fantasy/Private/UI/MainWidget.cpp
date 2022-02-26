@@ -25,7 +25,9 @@ void UMainWidget::NativeConstruct()
 		if (auto* StatsComp = MainChar->GetStatsComponent())
 		{
 			OnHealthChanged(StatsComp->GetHealth());
+			UpdateMoney(StatsComp->GetMoney());
 
+			StatsComp->OnMoneyChanged.AddDynamic(this, &ThisClass::UpdateMoney);
 			StatsComp->OnHealthChangedDelegate.AddDynamic(this, &ThisClass::OnHealthChanged);
 		}
 	}
@@ -41,5 +43,13 @@ void UMainWidget::NativeDestruct()
 		{
 			StatsComp->OnHealthChangedDelegate.RemoveAll(this);
 		}
+	}
+}
+
+void UMainWidget::UpdateMoney(float NewMoneyValue)
+{
+	if (MoneyText)
+	{
+		MoneyText->SetText(FText::AsNumber(static_cast<int>(NewMoneyValue)));
 	}
 }

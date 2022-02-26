@@ -9,7 +9,7 @@
 #include "Components/StatsComponent.h"
 #include "Components/InteractionComponent.h"
 #include "Components/SkeletalMeshComponent.h"
-#include "Components/ChildActorComponent.h"
+#include "Character/CharacterItem.h"
 #include "Interfaces/InteractionInterface.h"
 
 AMainCharacter::AMainCharacter()
@@ -116,4 +116,21 @@ bool AMainCharacter::IsHasShield()
 		}
 	}
 	return false;
+}
+
+void AMainCharacter::EquipNewItem(ACharacterItem* NewEquipedItem)
+{
+	if (AttachedActor)
+	{
+		AttachedActor->Destroy();
+	}
+
+	if (NewEquipedItem)
+	{
+		NewEquipedItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("HeadSocket"));
+		NewEquipedItem->SetActorRelativeLocation(NewEquipedItem->ActorTransform.GetLocation());
+		NewEquipedItem->SetActorScale3D(NewEquipedItem->ActorTransform.GetScale3D());
+		AttachedActor = NewEquipedItem;
+	}
+
 }
