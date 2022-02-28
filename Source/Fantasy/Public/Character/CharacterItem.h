@@ -83,10 +83,7 @@ protected:
 
 public:	
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FTransform ActorTransform;
-
-	virtual void BeginDestroy() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void OnInteraction();

@@ -8,7 +8,6 @@ ACharacterItem::ACharacterItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	ActorTransform.SetScale3D(FVector(1,1,1));
 }
 
 void ACharacterItem::OnInteraction_Implementation()
@@ -23,10 +22,10 @@ void ACharacterItem::OnInteraction_Implementation()
 	}
 }
 
-void ACharacterItem::BeginDestroy()
+void ACharacterItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UnEquipedEffect();
-	Super::BeginDestroy();
+	Super::EndPlay(EndPlayReason);
 }
 
 FText USalableItem::GetSalableItemName_Implementation()
@@ -67,7 +66,7 @@ bool USalableItem::CheckAlreadyBought_Implementation(UObject* WCO)
 {
 	if (auto* MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(WCO, 0)))
 	{
-		if (!MainChar->GetAttachedActor() && !ItemInfo.ItemClass.Get())
+		if (!MainChar->GetAttachedActor() || !ItemInfo.ItemClass.Get())
 			return false;
 
 		return (MainChar->GetAttachedActor()->GetClass()->GetName() == ItemInfo.ItemClass.Get()->GetName());

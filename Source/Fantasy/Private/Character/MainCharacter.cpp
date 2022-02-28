@@ -128,8 +128,6 @@ void AMainCharacter::EquipNewItem(ACharacterItem* NewEquipedItem)
 	if (NewEquipedItem)
 	{
 		NewEquipedItem->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("HeadSocket"));
-		NewEquipedItem->SetActorRelativeLocation(NewEquipedItem->ActorTransform.GetLocation());
-		NewEquipedItem->SetActorScale3D(NewEquipedItem->ActorTransform.GetScale3D());
 		AttachedActor = NewEquipedItem;
 	}
 
