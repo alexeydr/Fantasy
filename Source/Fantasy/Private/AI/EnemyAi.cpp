@@ -6,24 +6,22 @@
 #include "EngineUtils.h"
 #include "AIController.h"
 #include "SpellBase.h"
+#include "Perception/PawnSensingComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Perception/AIPerceptionComponent.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SphereComponent.h"
 
 AEnemyAi::AEnemyAi()
 {
 	StatsComponent = CreateDefaultSubobject<UStatsComponent>("StatsComp");
+	PerceptionComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSenseComp");
 }
 
-void AEnemyAi::OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors)
+void AEnemyAi::OnPerceptionUpdated(APawn* UpdatedActors)
 {
-	for (const auto& Act: UpdatedActors)
+	if (UpdatedActors == MainChar)
 	{
-		if (Act == MainChar)
-		{
-			GoToAttackPosition();
-		}
+		GoToAttackPosition();
 	}
 }
 
@@ -84,7 +82,6 @@ void AEnemyAi::BeginPlay()
 {
 	Super::BeginPlay();
 	MainChar = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	PerceptionComp = FindComponentByClass<UAIPerceptionComponent>();
 	SphereComp = FindComponentByClass<USphereComponent>();
 	MovementComp = FindComponentByClass<UCharacterMovementComponent>();
 	if (SphereComp && PerceptionComp && MainChar && StatsComponent)
@@ -96,7 +93,7 @@ void AEnemyAi::BeginPlay()
 		}
 		SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnCompBeginOverlap);
 		StatsComponent->OnDeathDelegate.AddDynamic(this, &ThisClass::OnDeath);
-		PerceptionComp->OnPerceptionUpdated.AddDynamic(this, &ThisClass::OnPerceptionUpdated);
+		PerceptionComp->OnSeePawn.AddDynamic(this, &ThisClass::OnPerceptionUpdated);
 	}
 }
 

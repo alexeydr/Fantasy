@@ -30,7 +30,7 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	bool bTaskStarted;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 	AActor* MoveTarget;
 
 	void ContinueCurrentTask();

@@ -8,7 +8,7 @@
 #include "EnemyAi.generated.h"
 
 class UStatsComponent;
-class UAIPerceptionComponent;
+class UPawnSensingComponent;
 class AMainCharacter;
 class USphereComponent;
 class UAnimationAsset;
@@ -43,7 +43,7 @@ protected:
 	UStatsComponent* StatsComponent;
 	
 	UPROPERTY()
-	UAIPerceptionComponent* PerceptionComp;
+	UPawnSensingComponent* PerceptionComp;
 
 	UPROPERTY()
 	USphereComponent* SphereComp;
@@ -55,7 +55,7 @@ protected:
 	UCharacterMovementComponent* MovementComp;
 
 	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& UpdatedActors);
+	void OnPerceptionUpdated(APawn* UpdatedActors);
 	
 	UFUNCTION()
 	void OnCharacterCastSpell(ESpellStatus Status, const FSpell& Spell);
